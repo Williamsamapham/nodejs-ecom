@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
 require('dotenv').config();
 
 const dbConnect = require('./config/dbconnect')
@@ -14,6 +15,8 @@ app.use(express.json());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(cookieParser())
 
 dbConnect();
 initRoutes(app);

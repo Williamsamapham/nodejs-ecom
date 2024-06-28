@@ -1,5 +1,8 @@
 const User = require('../model/user');
 const asyncHandler = require('express-async-handler');
+const { generateAccessToken, generateRefeshToken } = require('../middlewares/jwt');
+const jwt = require('jsonwebtoken')
+const { JsonWebTokenError } = require('jsonwebtoken');
 
 const register = asyncHandler(async (req, res) => {
     const { email, password, firstname, lastname, mobile } = req.body;
@@ -15,11 +18,14 @@ const register = asyncHandler(async (req, res) => {
         const newUser = await User.create(req.body)
         return res.status(200).json({
             success: newUser ? true : false,
-            message: newUser ?  'Đăng ký thành công, Vui lòng đăng nhập' : 'Đăng ký thất bại'
+            message: newUser ? 'Đăng ký thành công, Vui lòng đăng nhập' : 'Đăng ký thất bại'
         })
     }
 
 })
+
+// Refesh token => Cấp mới access token
+// Access token => Xác thực người dùng, phân quyền người dùng
 
 const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
@@ -31,9 +37,18 @@ const login = asyncHandler(async (req, res) => {
     }
     const response = await User.findOne({ email });
     if (response && await response.isCorrectPassword(password)) {
-        const {password, role, ...userData} = response.toObject()
+        const { password, role, ...userData } = response.toObject()
+        //Tạo Asccess Token
+        const accessToken = generateAccessToken(response._id, role);
+        //Tạo Refresh Token
+        const refreshToken = generateRefeshToken(response._id)
+        // Lưu refresh token vào database
+        await User.findByIdAndUpdate(response._id, { refreshToken }, { new: true })
+        // Lưu refresh token vào cookie
+        res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 })
         return res.status(200).json({
             success: true,
+            accessToken,
             userData
         });
     } else {
@@ -41,7 +56,49 @@ const login = asyncHandler(async (req, res) => {
     }
 });
 
+const getCurrent = asyncHandler(async (req, res) => {
+    const { _id } = req.user;
+    const user = await User.findById(_id).select('-refreshToken -password -role')
+    return res.status(200).json({
+        success: !!user,
+        rs: user ? user : 'Không tìm thấy người dùng'
+    });
+});
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    // Lấy token từ cookie 
+    const cookie = req.cookies
+    // const { _id } =
+    // Check xem có token trong cookie hay không
+    if (!cookie || !cookie.refreshToken) throw new Error('No refresh token in cookie')
+    // Check token có hợp lệ hay không
+    const rs = await jwt.verify(cookie.refreshToken, process.env.JWT_SECRET)
+    const response = await User.findOne({ _id: rs._id, refreshToken: cookie.refreshToken })
+    return res.status(200).json({
+        success: response ? true : false,
+        newAccessToken: response ? generateAccessToken(response._id, response.role) : 'refresh token not matched'
+    })
+})
+
+const logout = asyncHandler(async (req, res) => {
+    const cookie = req.cookies
+    if (!cookie || !cookie.refreshToken) throw new Error('No refresh token in cookies')
+    // Xóa refresh Token ở db
+    await User.findOneAndUpdate({ refreshToken: cookie.refreshToken }, { refreshToken: '' }, { new: true })
+    // Xóa refresh Token ở cookie trình duyệt
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: true
+    })
+    return res.status(200).json({
+        success: true,
+        message: 'Đăng xuất thành công'
+    })
+})
 module.exports = {
     register,
-    login
+    login,
+    getCurrent,
+    refreshAccessToken,
+    logout
 };
