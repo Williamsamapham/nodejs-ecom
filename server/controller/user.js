@@ -40,13 +40,13 @@ const login = asyncHandler(async (req, res) => {
     }
     const response = await User.findOne({ email });
     if (response && await response.isCorrectPassword(password)) {
-        const { password, role, ...userData } = response.toObject()
+        const { password, role, refreshToken, ...userData } = response.toObject()
         //Tạo Asccess Token
         const accessToken = generateAccessToken(response._id, role);
         //Tạo Refresh Token
-        const refreshToken = generateRefeshToken(response._id)
+        const newRefreshToken = generateRefeshToken(response._id)
         // Lưu refresh token vào database
-        await User.findByIdAndUpdate(response._id, { refreshToken }, { new: true })
+        await User.findByIdAndUpdate(response._id, { refreshToken: newRefreshToken }, { new: true })
         // Lưu refresh token vào cookie
         res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 })
         return res.status(200).json({
@@ -63,7 +63,7 @@ const getCurrent = asyncHandler(async (req, res) => {
     const { _id } = req.user;
     const user = await User.findById(_id).select('-refreshToken -password -role')
     return res.status(200).json({
-        success: !!user,
+        success: user ? true : false,
         rs: user ? user : 'Không tìm thấy người dùng'
     });
 });
@@ -147,6 +147,60 @@ const resetPassword = asyncHandler(async (req, res) => {
     });
 });
 
+const getUsers = asyncHandler(async (req, res) => {
+    const response = await User.find().select('-refreshToken -password -role')
+    return res.status(200).json({
+        success: response ? true : false,
+        users: response
+    });
+});
+const deleteUser = asyncHandler(async (req, res) => {
+    const { _id } = req.query
+    if (!_id) throw new Error('Missing id')
+    const response = await User.findByIdAndDelete(_id)
+    return res.status(200).json({
+        success: response ? true : false,
+        deletedUser: response ? `User with email ${response.email} Deleted` : 'Not found'
+
+    });
+});
+const updateUserProfile = asyncHandler(async (req, res) => {
+    const { _id } = req.user
+    if (!_id || Object.keys(req.body).length === 0) throw new Error('Missing input')
+    const response = await User.findByIdAndUpdate(_id, req.body, { new: true }).select('-password -role')
+    return res.status(200).json({
+        success: response ? true : false,
+        updatedUser: response ? response : 'Someting Wrong'
+
+    });
+});
+const updateUserByAdmin = asyncHandler(async (req, res) => {
+    try {
+        const { uid } = req.params;
+        const updateData = req.body;
+
+        // Check if the request body is empty
+        if (!uid || Object.keys(updateData).length === 0) {
+            return res.status(400).json({ success: false, message: 'Missing input' });
+        }
+
+        // Update the user and exclude the password and role from the response
+        const response = await User.findByIdAndUpdate(uid, updateData, { new: true }).select('-password -role -refreshToken');
+
+        if (!response) {
+            return res.status(404).json({ success: false, message: 'User not found or update failed' });
+        }
+
+        // Return the updated user
+        return res.status(200).json({
+            success: true,
+            updatedUser: response,
+        });
+    } catch (error) {
+        console.error(error); // Log the error for debugging
+        return res.status(500).json({ success: false, message: 'Something went wrong', error: error.message });
+    }
+});
 module.exports = {
     register,
     login,
@@ -154,5 +208,9 @@ module.exports = {
     refreshAccessToken,
     logout,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    getUsers,
+    deleteUser,
+    updateUserProfile,
+    updateUserByAdmin
 };
