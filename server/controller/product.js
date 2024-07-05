@@ -46,17 +46,28 @@ const getProducts = asyncHandler(async (req, res) => {
         }
 
         // Fields limiting
-
+        if (req.query.fields) {
+            const fields = req.query.fields.split(',').join(' ');
+            queryCommand = queryCommand.select(fields);
+        }
         // Pagination
-
+        // limit: Số phần tử(object) lấy về 1 lần gọi API
+        // skip: Bỏ qua bao nhiêu cái rồi mới lấy API (1 2 3 ... 10) 
+        // +2 => 2
+        // +asdasd => NaN
+        const page = +req.query.page || 1
+        const limit = +req.query.limit || process.env.LIMIT_PRODUCTS
+        const skip = (page - 1) * limit
+        queryCommand.skip(skip).limit(limit)
         //  Execute query
         // Số lượng sản phẩm thỏa mãn điều kiện !== số lượng trả về 1 lần gọi API
         const response = await queryCommand.exec();
         const counts = await Product.find(formattedQueries).countDocuments();
         return res.status(200).json({
             success: true,
+            counts,
             products: response.length ? response : 'Không tìm thấy sản phẩm',
-            counts
+
         });
     } catch (error) {
         console.error(error);
