@@ -2,7 +2,6 @@ const Product = require('../model/product');
 const asyncHandler = require('express-async-handler');
 const slugify = require('slugify');
 const { options } = require('../routes/product');
-const { response } = require('express');
 const createProduct = asyncHandler(async (req, res) => {
     if (Object.keys(req.body).length === 0) throw new Error('Missing Inputs')
     if (req.body && req.body.title) req.body.slug = slugify(req.body.title)
@@ -139,11 +138,21 @@ const ratings = asyncHandler(async (req, res) => {
         updatedProduct
     })
 })
+const uploadImageProduct = asyncHandler(async (req, res) => {
+    const { productId } = req.params
+    if (!req.files) throw new Error('Missing Inputs')
+    const response = await Product.findByIdAndUpdate(productId, { $push: { images: { $each: req.files.map(el => el.path) } } }, { new: true })
+    return res.status(200).json({
+        success: response ? true : false,
+        updatedProduct: response ? `Product ${response.title} Updated` : 'Not found'
+    })
+})
 module.exports = {
     createProduct,
     getProduct,
     getProducts,
     deleteProduct,
     updateProduct,
-    ratings
+    ratings,
+    uploadImageProduct
 }

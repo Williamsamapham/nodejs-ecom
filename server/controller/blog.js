@@ -81,55 +81,20 @@ const deleteBlog = asyncHandler(async (req, res) => {
         });
     }
 })
-// LIKE
-const likeBlog = asyncHandler(async (req, res) => {
-    const { _id } = req.user
-    const { blogId } = req.body
-    if (!_id || !blogId) return res.status(400).json({ success: false, message: 'Missing Inputs' })
-
-    try {
-        const blog = await Blog.findById(blogId)
-        if (!blog) return res.status(404).json({ success: false, message: 'Blog not found' })
-
-        const alreadyDisLiked = blog.disLikes.find(el => el.toString() === _id)
-        if (alreadyDisLiked) {
-            const response = await Blog.findByIdAndUpdate(blogId, { $pull: { disLikes: _id } }, { new: true })
-            return res.json({
-                success: response ? true : false,
-                rs: response
-            })
-        }
-
-        const isLiked = blog.likes.find(el => el.toString() === _id)
-        if (isLiked) {
-            const response = await Blog.findByIdAndUpdate(blogId, { $pull: { likes: _id } }, { new: true })
-            return res.json({
-                success: response ? true : false,
-                rs: response
-            })
-        } else {
-            const response = await Blog.findByIdAndUpdate(blogId, { $push: { likes: _id } }, { new: true })
-            return res.json({
-                success: response ? true : false,
-                rs: response
-            })
-        }
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
+const uploadImageBlog = asyncHandler(async (req, res) => {
+    const { blogId } = req.params
+    if (!req.file) throw new Error('Missing Inputs')
+    const response = await Blog.findByIdAndUpdate(blogId, { image: req.file.path }, { new: true })
+    return res.status(200).json({
+        success: response ? true : false,
+        updatedBlog: response ? `Blog ${response.title} Updated` : 'Not found'
+    })
 })
-
-//  DISLIKE
-/*
-Khi người dunfng like 1 bài blog thì:
-1. Check xem người dùng đó có nhấn dislike trước đó hay không => bỏ trạng thái dislike
-2. Check xem người dùng có like hay ko => bỏ like / thêm like
-*/
 module.exports = {
     createBlog,
     getBlog,
     getBlogs,
     deleteBlog,
     updateBlog,
-    likeBlog
+    uploadImageBlog
 }

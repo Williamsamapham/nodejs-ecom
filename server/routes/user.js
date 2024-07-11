@@ -8,11 +8,13 @@ router.get('/current', verifiAccessToken, ctrls.getCurrent)
 router.get('/all-users', [verifiAccessToken, isAdmin], ctrls.getUsers)
 router.delete('/delete-user', [verifiAccessToken, isAdmin], ctrls.deleteUser)
 router.put('/update-profile', verifiAccessToken, ctrls.updateUserProfile)
-router.put('/update-user/:uid', [verifiAccessToken, isAdmin], ctrls.updateUserByAdmin)
 router.post('/refreshtoken', ctrls.refreshAccessToken)
 router.get('/logout', ctrls.logout)
 router.get('/forgotpassword', ctrls.forgotPassword)
 router.put('/resetpassword', ctrls.resetPassword)
+router.put('/update-user/:uid', [verifiAccessToken, isAdmin], ctrls.updateUserByAdmin)
+router.put('/address', [verifiAccessToken], ctrls.updateAddressUser)
+router.put('/add-to-cart', [verifiAccessToken], ctrls.addToCart)
 
 module.exports = router
 
