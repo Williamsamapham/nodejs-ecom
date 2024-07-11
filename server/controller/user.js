@@ -7,8 +7,8 @@ const sendMail = require('../ultils/sendMail')
 const crypto = require("crypto");
 
 const register = asyncHandler(async (req, res) => {
-    const { email, password, firstname, lastname, mobile } = req.body;
-    if (!email || !password || !firstname || !lastname || !mobile) {
+    const { email, password, firstname, lastname } = req.body;
+    if (!email || !password || !firstname || !lastname) {
         return res.status(400).json({
             success: false,
             message: 'Missing inputs'

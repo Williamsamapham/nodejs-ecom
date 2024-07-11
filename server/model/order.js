@@ -9,10 +9,13 @@ var orderSchema = new mongoose.Schema({
     }],
     status: {
         type: String,
-        default: 'Processing',
+        default: 'Pending',
         enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Successed', 'Cancelled'],
     },
-    paymentInten: {},
+    total: Number,
+    coupon: {
+        type: mongoose.Schema.Types.ObjectId, ref: 'Coupon'
+    },
     orderBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

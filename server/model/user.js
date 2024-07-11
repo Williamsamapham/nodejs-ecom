@@ -19,7 +19,6 @@ var userSchema = new mongoose.Schema({
     },
     mobile: {
         type: String,
-        required: true,
         unique: true,
     },
     password: {
@@ -35,10 +34,7 @@ var userSchema = new mongoose.Schema({
         quantity: Number,
         color: String
     }],
-    address: {
-        type: Array,
-        default: []
-    },
+    address: String,
     withlist: [{ type: mongoose.Types.ObjectId, ref: 'Product' }],
     isBlocked: {
         type: Boolean,
