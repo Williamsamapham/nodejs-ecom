@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Route, Routes } from "react-router-dom";
 import { Login, Home, Public } from "./pages/public";
 import path from "./ultils/path";
@@ -8,8 +8,8 @@ import { useDispatch } from "react-redux";
 function App() {
   const dispatch = useDispatch();
   React.useEffect(() => {
-  dispatch(getCategories())
-  }, []);
+    dispatch(getCategories());
+  }, [dispatch]);
   return (
     <div className="min-h-screen font-main">
       <Routes>
