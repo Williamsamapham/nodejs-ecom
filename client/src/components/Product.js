@@ -1,22 +1,22 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { formatMoney, renderStar } from "../ultils/helper";
 import { SelectOption } from "./";
 import icons from "../ultils/icon";
 
 const { FaEye, IoMenu, FaHeart } = icons;
 const Product = ({ images, title, price, totalRatings, pid }) => {
-  const [isShowOption, setisShowOption] = useState(false)
+  const [isShowOption, setisShowOption] = useState(false);
   return (
     <div className="w-full text-base px-[10px]">
-      <div className=" w-full border p-[15px] flex flex-col items-center" 
-      onMouseEnter={e => {
-        e.stopPropagation()
-        setisShowOption(true);
-      }}
-      onMouseLeave={e => {
-        e.stopPropagation()
-        setisShowOption(false);
-      }}>
+      <div
+        className=" w-full border p-[15px] flex flex-col items-center"
+        onMouseEnter={(e) => {
+          setisShowOption(true);
+        }}
+        onMouseLeave={(e) => {
+          setisShowOption(false);
+        }}
+      >
         <div className="w-full relative">
           {isShowOption && (
             <div className="absolute bottom-[-10px] flex justify-center left-0 right-0 gap-2 animate-slide-top">
