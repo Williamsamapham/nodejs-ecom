@@ -1,5 +1,5 @@
 import React from "react";
-import { Banner, Bestseller, Sidebar, DealDayly } from "../../components";
+import { Banner, Bestseller, Sidebar, DealDayly, FreatureProduct } from "../../components";
 const Home = () => {
   return (
     <>
@@ -12,6 +12,9 @@ const Home = () => {
           <Banner />
           <Bestseller />
         </div>
+      </div>
+      <div className="my-8">
+        <FreatureProduct />
       </div>
       <div className="w-full h-[500px]"></div>
     </>
