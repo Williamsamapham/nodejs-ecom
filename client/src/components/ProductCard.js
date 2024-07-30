@@ -15,7 +15,9 @@ const ProductCard = ({ images, title, price, totalRatings }) => {
         />
         <div className="flex flex-col gap-1 mt-[15px] items-start w-full text-xs">
           <span className="line-clamp-1 capitalize text-sm">{title}</span>
-          <span className="flex h-4">{renderStar(totalRatings, 14)}</span>
+          <span className="flex h-4">{renderStar(totalRatings)?.map((el,index) => {
+            return <span key={index}>{el}</span>
+          })}</span>
           <span>{`${formatMoney(price)}`} VND</span>
         </div>
       </div>

@@ -1,40 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { apiGetProduct } from "../apis/Product";
-import { Product } from "./";
-import Slider from "react-slick";
+import { CustomSlider } from "./";
+import {getNewProduct} from '../store/product/asyncAction'
+import { useDispatch, useSelector } from "react-redux";
 const tabs = [
   { id: 1, name: "best sellers" },
   { id: 2, name: "new arrivals" },
 ];
-const settings = {
-  dots: false,
-  infinite: false,
-  speed: 500,
-  slidesToShow: 3,
-  slidesToScroll: 1,
-};
+
 const Bestseller = () => {
   const [bestSeller, setBestSeller] = useState(null);
-  const [newProduct, setNewProduct] = useState(null);
-  const [produts, setProduts] = useState(null);
+  const [products, setproducts] = useState(null);
+  const dispatch = useDispatch();
+  const {newProduct} = useSelector(state => state.products)
   const [ativedTab, setAtivedTab] = useState(1);
   const fecthProducts = async () => {
-    const response = await Promise.all([
-      apiGetProduct({ sort: "-sold" }),
-      apiGetProduct({ sort: "-createdAt" }),
-    ]);
-    if (response[0]?.success) {
-      setBestSeller(response[0]?.products);
-      setProduts(response[0].products);
+    const response = await apiGetProduct({sort:'-sold'})
+    if (response?.success) {
+      setBestSeller(response?.products);
+      setproducts(response?.products);
     }
-    if (response[1]?.success) setNewProduct(response[1]?.products);
   };
   useEffect(() => {
     fecthProducts();
+    dispatch(getNewProduct())
   }, []);
   useEffect(() => {
-    if (ativedTab === 1) setProduts(bestSeller);
-    if (ativedTab === 2) setProduts(newProduct);
+    if (ativedTab === 1) setproducts(bestSeller);
+    if (ativedTab === 2) setproducts(newProduct);
   }, [ativedTab, bestSeller, newProduct]);
   return (
     <>
@@ -51,19 +44,8 @@ const Bestseller = () => {
           </span>
         ))}
       </div>
-      <div className=" mx-[-10px] border-t-2 border-main pt-4">
-        <Slider {...settings}>
-          {produts?.map((el) => (
-            <Product
-              key={el._id}
-              pid={el._id}
-              images={el.images}
-              title={el.title}
-              price={el.price}
-              totalRatings={el.totalRatings}
-            />
-          ))}
-        </Slider>
+      <div className="mt-4 mx-[-10px] border-t-2 border-main pt-4">
+        <CustomSlider products={products}/>
       </div>
       <div className="w-full flex gap-4 mt-4">
         <img
