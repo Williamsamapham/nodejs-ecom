@@ -18,7 +18,9 @@
     "react-slick": "^0.30.2",
     "react-toastify": "^10.0.5",
     "redux-persist": "^6.0.0",
+    "reduxjs-toolkit-persist": "^7.2.1",
     "slick-carousel": "^1.8.1",
+    "sweetalert2": "^11.12.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

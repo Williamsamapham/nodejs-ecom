@@ -33,10 +33,20 @@ module.exports = {
             transform: "translateY(0px)",
           },
         },
+        "slide-top-sm": {
+          "0%": {
+            transform: "translateY(8px)",
+          },
+          "100%": {
+            transform: "translateY(0px)",
+          },
+        },
       },
       animation: {
         "slide-top":
           "slide-top 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;",
+        "slide-top-sm":
+          "slide-top-sm 0.2s linear both;",
       },
     },
   },
